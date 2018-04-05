@@ -11,6 +11,7 @@ class Box {
     this.paddingY = this.height / 2;
 
     this.moveEvent = new LiteEvent();
+    this.moveEndEvent = new LiteEvent();
     this.clickEvent = new LiteEvent();
   }
 
@@ -50,8 +51,8 @@ class Box {
     let bbox = this.bbox();
     let x = this.snap(bbox.x);
     let y = this.snap(bbox.y);
-
     this.setPosition(x, y);
+    this.moveEndEvent.trigger();
   }
 
   textPosition(x, y) {

@@ -1,13 +1,13 @@
 class NestedGraph {
   constructor(canvas, config) {
-    var c = {
+    this.c = {
       width: canvas.offsetWidth,
       height: canvas.offsetHeight,
       center: { x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2 }
     };
 
     this.stack = [];
-    this.paper = Raphael(canvas, c.width, c.height);
+    this.paper = Raphael(canvas, this.c.width, this.c.height);
     this.drawGraph(config.graph);
   }
 
@@ -43,6 +43,21 @@ class NestedGraph {
           this.drawGraph(x.graph);
         });
       }
+
+      //make sure we are inside paper
+      box.moveEndEvent.on(() => {
+        let bbox = box.bbox();
+        let x = bbox.x < 0 ? 0 : bbox.x;
+        let y = bbox.y < 0 ? 0 : bbox.y;
+        if (x > this.c.width - bbox.width) {
+          x = this.c.width - bbox.width;
+        }
+        if (y > this.c.height - bbox.height) {
+          y = this.c.height - bbox.height;
+        }
+
+        box.setPosition(x, y);
+      });
 
       box.drawBox(x.x, x.y);
       nodeMap[x.id] = box;
