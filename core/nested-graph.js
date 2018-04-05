@@ -28,13 +28,24 @@ class NestedGraph {
     let nodeMap = {};
     graph.nodes.forEach(x => {
       let isNested = x.nodes !== undefined;
-      nodeMap[x.id] = new Box(x.id, this.paper, isNested);
-      nodeMap[x.id].drawBox(x.x, x.y);
+      let box = new Box(x.id, this.paper, isNested);
+
+      //update graph configuration when box position has changed
+      box.moveEvent.on(() => {
+        let bbox = box.bbox();
+        x.x = bbox.x;
+        x.y = bbox.y;
+      });
+
+      //draw child graph when clicking
       if (isNested) {
-        nodeMap[x.id].clickEvent.on(() => {
+        box.clickEvent.on(() => {
           this.drawGraph({ nodes: x.nodes, connectors: x.connectors });
         });
       }
+
+      box.drawBox(x.x, x.y);
+      nodeMap[x.id] = box;
     });
 
     //create connectors
