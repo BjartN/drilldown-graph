@@ -65,7 +65,8 @@ class Box {
   }
 
   snap(x) {
-    return Math.round(x / 30) * 30;
+    let gridResolution = 80;
+    return Math.round(x / gridResolution) * gridResolution;
   }
 
   bbox() {
