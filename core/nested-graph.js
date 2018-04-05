@@ -1,5 +1,5 @@
 class NestedGraph {
-  constructor(canvas, graph) {
+  constructor(canvas, config) {
     var c = {
       width: canvas.offsetWidth,
       height: canvas.offsetHeight,
@@ -8,7 +8,7 @@ class NestedGraph {
 
     this.stack = [];
     this.paper = Raphael(canvas, c.width, c.height);
-    this.drawGraph(graph);
+    this.drawGraph(config.graph);
   }
 
   up() {
@@ -27,7 +27,7 @@ class NestedGraph {
     //create nodes
     let nodeMap = {};
     graph.nodes.forEach(x => {
-      let isNested = x.nodes !== undefined;
+      let isNested = x.graph !== undefined;
       let box = new Box(x.id, this.paper, isNested);
 
       //update graph configuration when box position has changed
@@ -40,7 +40,7 @@ class NestedGraph {
       //draw child graph when clicking
       if (isNested) {
         box.clickEvent.on(() => {
-          this.drawGraph({ nodes: x.nodes, connectors: x.connectors });
+          this.drawGraph(x.graph);
         });
       }
 

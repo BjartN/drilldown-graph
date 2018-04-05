@@ -20,7 +20,11 @@ class Box {
     this.box.attr("stroke-width", 2);
     this.box.attr("stroke", "black");
 
-    this.box.drag(this.move.bind(this), this.start.bind(this));
+    this.box.drag(
+      this.move.bind(this),
+      this.start.bind(this),
+      this.end.bind(this)
+    );
     this.box.dblclick(() => {
       this.clickEvent.trigger();
     });
@@ -36,18 +40,32 @@ class Box {
     this.oy = this.box.attr("y");
   }
 
+  move(dx, dy) {
+    let x = this.ox + dx;
+    let y = this.oy + dy;
+    this.setPosition(x, y);
+  }
+
+  end() {
+    let bbox = this.bbox();
+    let x = this.snap(bbox.x);
+    let y = this.snap(bbox.y);
+
+    this.setPosition(x, y);
+  }
+
   textPosition(x, y) {
     return { x: x + this.paddingX, y: y + this.paddingY };
   }
 
-  move(dx, dy) {
-    let x = this.ox + dx;
-    let y = this.oy + dy;
-
-    this.moveEvent.trigger();
-
+  setPosition(x, y) {
     this.text.attr(this.textPosition(x, y));
     this.box.attr({ x: x, y: y });
+    this.moveEvent.trigger();
+  }
+
+  snap(x) {
+    return Math.round(x / 30) * 30;
   }
 
   bbox() {
