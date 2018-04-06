@@ -1,4 +1,16 @@
-class Connector {
+import { Box } from "./box";
+import { LiteEvent } from "../util/lite-event";
+import Raphael from "webpack-raphael";
+
+/**
+ * Drawing the connection bewteen two boxes using Raphael
+ */
+export class Connector {
+  /**
+   * @param  {Paper} paper - The paper to draw the connector
+   * @param  {Box} from - Start of connector
+   * @param  {Box} to - End of connector
+   */
   constructor(paper, from, to) {
     if (paper === undefined || from === undefined || to === undefined) {
       throw new Error("Argument exceptions");
@@ -9,11 +21,14 @@ class Connector {
     this.line = undefined;
     this.paper = paper;
 
-    this.from.moveEvent.on(this.drawLine.bind(this));
-    this.to.moveEvent.on(this.drawLine.bind(this));
+    this.from.moveEvent.on(this.render.bind(this));
+    this.to.moveEvent.on(this.render.bind(this));
   }
 
-  drawLine() {
+  /**
+   * Draw line between the two boxes
+   */
+  render() {
     let from = this.from.bbox();
     let to = this.to.bbox();
 

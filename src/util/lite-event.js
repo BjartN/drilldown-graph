@@ -1,4 +1,4 @@
-class LiteEvent {
+export class LiteEvent {
   constructor() {
     this.handlers = [];
   }
