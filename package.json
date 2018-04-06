@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "webpack-dev-server --mode development",
     "prod": "webpack --mode production",
-    "docs": "jsdoc src -r -d docs"
+    "docs": "jsdoc src -r readme-docs.md -d docs"
   },
   "author": "",
   "license": "ISC",
