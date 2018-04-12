@@ -23,6 +23,7 @@ export class Connector {
 
     this.from.moveEvent.on(this.render.bind(this));
     this.to.moveEvent.on(this.render.bind(this));
+    this.clickEvent = new LiteEvent();
   }
 
   /**
@@ -38,10 +39,25 @@ export class Connector {
       this.line = this.paper.path(path);
       this.line.attr("stroke-width", 2);
       this.line.attr("stroke", "black");
-      this.line.attr("stroke-dasharray", "-");
       this.line.toBack();
+
+      //making it easier to click
+      this.shadowLine = this.paper.path(path);
+      this.shadowLine.attr("stroke-width", 12);
+      this.shadowLine.attr("stroke", "transparent");
+      this.shadowLine.toBack();
     } else {
       this.line.attr("path", path);
+      this.shadowLine.attr("path", path);
     }
+
+    this.shadowLine.click(() => {
+      this.clickEvent.trigger();
+    });
+  }
+
+  toggleSelect() {
+    let da = this.line.attr("stroke-dasharray") === "-" ? "" : "-";
+    this.line.attr("stroke-dasharray", da);
   }
 }

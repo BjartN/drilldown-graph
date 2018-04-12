@@ -1,6 +1,7 @@
 import { LiteEvent } from "../util/lite-event";
 import Raphael from "webpack-raphael";
 import "./fitText";
+import mode from "../mode";
 
 /**
  * Drawing and dragging of a graph node using Raphael
@@ -8,10 +9,12 @@ import "./fitText";
 export class Box {
   /**
    * @param  {string} id - Id of the node
+   * @param  {number} mode - Mode of the graph
    * @param  {Paper} paper - Rafphael Paper object
    * @param  {boolean} isNested - Indicates that this node can be drilled into
    */
-  constructor(id, paper, isNested) {
+  constructor(id, mode, paper, isNested) {
+    this.mode = mode;
     this.id = id;
     this.width = 120;
     this.height = 80;
@@ -25,6 +28,7 @@ export class Box {
     this.moveEvent = new LiteEvent();
     this.moveEndEvent = new LiteEvent();
     this.clickEvent = new LiteEvent();
+    this.dblClickEvent = new LiteEvent();
   }
 
   /**
@@ -43,7 +47,12 @@ export class Box {
       this.start.bind(this),
       this.end.bind(this)
     );
+
     this.box.dblclick(() => {
+      this.dblClickEvent.trigger();
+    });
+
+    this.box.click(() => {
       this.clickEvent.trigger();
     });
 
@@ -54,10 +63,26 @@ export class Box {
   }
 
   /**
+   * Show box as selected
+   */
+  toggleSelect() {
+    let sw = this.box.attr("stroke-width") === 2 ? 4 : 2;
+    this.box.attr("stroke-width", sw);
+
+    // let c = this.box.attr("stroke") === "black" ? "green" : "black";
+    // this.box.attr("stroke", c);
+
+    let da = this.box.attr("stroke-dasharray") === "-" ? "" : "-";
+    this.box.attr("stroke-dasharray", da);
+  }
+
+  /**
    * Start moving the box
    * @private
    */
   start() {
+    if (this.mode !== mode.move) return;
+
     this.ox = this.box.attr("x");
     this.oy = this.box.attr("y");
   }
@@ -67,6 +92,8 @@ export class Box {
    * @private
    */
   move(dx, dy) {
+    if (this.mode !== mode.move) return;
+
     let x = this.ox + dx;
     let y = this.oy + dy;
     this.setPosition(x, y);
@@ -77,6 +104,8 @@ export class Box {
    * @private
    */
   end() {
+    if (this.mode !== mode.move) return;
+
     let bbox = this.bbox();
     let x = Box.snap(bbox.x);
     let y = Box.snap(bbox.y);
