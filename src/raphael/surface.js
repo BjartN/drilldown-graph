@@ -15,8 +15,13 @@ export class Surface {
     this.paper = Raphael(canvas, this.width, this.height);
   }
 
-  createBox(id, mode, isNested) {
-    return new Box(id, mode, this.paper, isNested);
+  /**
+   *
+   * @param {*} id - Id of entity
+   * @param {*} mutations - Mutations
+   */
+  createBox(id, mutations) {
+    return new Box(id, mutations, this.paper);
   }
 
   createConnector(from, to) {

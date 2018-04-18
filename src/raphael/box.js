@@ -8,22 +8,13 @@ import mode from "../mode";
  */
 export class Box {
   /**
-   * @param  {string} id - Id of the node
-   * @param  {number} mode - Mode of the graph
+   * @param  {} mutations - Mutations to perform on state
    * @param  {Paper} paper - Rafphael Paper object
-   * @param  {boolean} isNested - Indicates that this node can be drilled into
    */
-  constructor(id, mode, paper, isNested) {
-    this.mode = mode;
+  constructor(id, mutations, paper) {
     this.id = id;
-    this.width = 120;
-    this.height = 80;
-    this.box = undefined;
+    this.mutations = mutations;
     this.paper = paper;
-    this.isNested = isNested;
-
-    this.paddingX = this.width / 2;
-    this.paddingY = this.height / 2;
 
     this.moveEvent = new LiteEvent();
     this.moveEndEvent = new LiteEvent();
@@ -31,16 +22,24 @@ export class Box {
     this.dblClickEvent = new LiteEvent();
   }
 
-  /**
-   * Render a box at position given by upper right corner
-   * @param  {integer} x - Upper right corner x
-   * @param  {integer} y - Upper right corner y
-   */
-  render(x, y) {
-    this.box = this.paper.rect(x, y, this.width, this.height);
-    this.box.attr("fill", this.isNested ? "#ccff66" : "#ececec");
-    this.box.attr("stroke-width", 2);
-    this.box.attr("stroke", "black");
+  update(state) {
+    if (!this.box) throw new Error("Component not initialized");
+
+    this.box.attr("fill", state.fill ? state.fill : "blue");
+    this.box.attr("stroke-width", state.strokeWidth ? state.strokeWidth : 2);
+    this.box.attr("stroke", state.stroke ? state.stroke : "black");
+    this.box.attr({ x: state.x, y: state.y });
+    this.text.attr({ x: state.x, y: state.y });
+  }
+
+  create(state) {
+    this.box = this.paper.rect(state.x, state.y, state.w, state.h);
+    this.text = this.paper.text(state.x, state.y, this.id).fitText(state.w);
+
+    this.box.attr("fill", state.fill);
+    this.box.attr("stroke-width", state.strokeWidth);
+    this.box.attr("stroke", state.stroke);
+    this.text.attr("stroke-width", 0.5);
 
     this.box.drag(
       this.move.bind(this),
@@ -55,25 +54,6 @@ export class Box {
     this.box.click(() => {
       this.clickEvent.trigger();
     });
-
-    let tp = this.textPosition(x, y);
-    this.text = this.paper.text(tp.x, tp.y, this.id).fitText(this.width);
-    this.text.attr("stroke-width", 0.5);
-    this.text.attr("stroke", "black");
-  }
-
-  /**
-   * Show box as selected
-   */
-  toggleSelect() {
-    let sw = this.box.attr("stroke-width") === 2 ? 4 : 2;
-    this.box.attr("stroke-width", sw);
-
-    // let c = this.box.attr("stroke") === "black" ? "green" : "black";
-    // this.box.attr("stroke", c);
-
-    let da = this.box.attr("stroke-dasharray") === "-" ? "" : "-";
-    this.box.attr("stroke-dasharray", da);
   }
 
   /**
@@ -81,8 +61,6 @@ export class Box {
    * @private
    */
   start() {
-    if (this.mode !== mode.move) return;
-
     this.ox = this.box.attr("x");
     this.oy = this.box.attr("y");
   }
@@ -92,11 +70,10 @@ export class Box {
    * @private
    */
   move(dx, dy) {
-    if (this.mode !== mode.move) return;
-
-    let x = this.ox + dx;
-    let y = this.oy + dy;
-    this.setPosition(x, y);
+    this.x = this.ox + dx;
+    this.y = this.oy + dy;
+    this.box.attr({ x: this.x, y: this.y });
+    this.text.attr({ x: this.x, y: this.y });
   }
 
   /**
@@ -104,41 +81,8 @@ export class Box {
    * @private
    */
   end() {
-    if (this.mode !== mode.move) return;
-
-    let bbox = this.bbox();
-    let x = Box.snap(bbox.x);
-    let y = Box.snap(bbox.y);
-    this.setPosition(x, y);
+    this.mutations.setPosition(this.id, this.x, this.y);
     this.moveEndEvent.trigger();
-  }
-
-  /**
-   * Get position of text
-   * @private
-   */
-  textPosition(x, y) {
-    return { x: x + this.paddingX, y: y + this.paddingY };
-  }
-
-  /**
-   * Set position of text within box
-   * @param  {} x Upper left corner of box
-   * @param  {} y Lower left corner of box
-   */
-  setPosition(x, y) {
-    this.text.attr(this.textPosition(x, y));
-    this.box.attr({ x: x, y: y });
-    this.moveEvent.trigger();
-  }
-  /**
-   * Round to nearest grid point
-   * @private
-   * @param  {number} x - Number
-   */
-  static snap(x) {
-    let gridResolution = 80;
-    return Math.round(x / gridResolution) * gridResolution;
   }
 
   /**
